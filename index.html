@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Myanconnect</title>
+  <style>
+    /* Reset default margin and padding */
+    body, h1, h2, h3, p, input, textarea, button {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Basic styling for the body */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+    }
+
+    /* Container style */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header style */
+    header {
+      background-color: #3b5998;
+      color: #fff;
+      padding: 10px 0;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 28px;
+    }
+
+    /* Main content style */
+    main {
+      margin-top: 20px;
+    }
+
+    /* Post style */
+    .post {
+      background-color: #fff;
+      border: 1px solid #dddfe2;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .post h3 {
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .post p {
+      color: #555;
+      font-size: 16px;
+    }
+
+    /* Video style */
+    .video {
+      margin-bottom: 20px;
+    }
+
+    .video h3 {
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    /* Post form style */
+    #post-form {
+      background-color: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid #dddfe2;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    #post-form h2 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    #post-form input[type="text"],
+    #post-form textarea {
+      width: calc(100% - 20px);
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      background-color: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(5px);
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    #post-form input[type="text"]:focus,
+    #post-form textarea:focus {
+      background-color: rgba(255, 255, 255, 0.7);
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #post-form textarea {
+      height: 100px;
+    }
+
+    #post-form button {
+      background-color: rgba(0, 0, 0, 0.1);
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #post-form button:hover {
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    /* Footer style */
+    footer {
+      background-color: #f0f2f5;
+      text-align: center;
+      padding: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Myanconnect</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="videos-container"></div>
+    <div id="posts-container"></div>
+    <div id="post-form">
+      <h2>Create Post</h2>
+      <input type="text" id="post-title" placeholder="Enter title">
+      <textarea id="post-content" placeholder="Enter content"></textarea>
+      <button id="post-button">Post</button>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Myanconnect</p>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-auth.js"></script>
+  <script>
+    // Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCuZ0fE2EltxBV-UA3PCEgOcvM6A1iHTuw",
+  authDomain: "myanconnect.firebaseapp.com",
+  projectId: "myanconnect",
+  storageBucket: "myanconnect.appspot.com",
+  messagingSenderId: "348861661968",
+  appId: "1:348861661968:web:ae7b415dedb76555529b95",
+  measurementId: "G-6ZS7NGQ54H"
+};
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // Reference to Firestore database
+    const db = firebase.firestore();
+
+    // Function to display videos
+    function displayVideos() {
+      const videosContainer = document.getElementById("videos-container");
+
+      // Clear previous videos
+      videosContainer.innerHTML = "";
+
+      // Get videos from Firestore
+      db.collection("videos").get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            const video = doc.data();
+            const videoHtml = `
+              <div class="video">
+                <h3>${video.title}</h3>
+                <video controls>
+                  <source src="${video.url}" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </div>`;
+            videosContainer.innerHTML += videoHtml;
+          });
+        })
+        .catch(error => {
+          console.error("Error getting videos: ", error);
+        });
+    }
+
+    // Call displayVideos when the page loads
+    displayVideos();
+
+    // Function to display posts
+    function displayPosts() {
+      const postsContainer = document.getElementById("posts-container");
+
+      // Clear previous posts
+      postsContainer.innerHTML = "";
+
+      // Get posts from Firestore
+      db.collection("posts").get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            const post = doc.data();
+            const postHtml = `
+              <div class="post">
+                <h3>${post.title}</h3>
+                <p>${post.content}</p>
+              </div>`;
+            postsContainer.innerHTML += postHtml;
+          });
+        })
+        .catch(error => {
+          console.error("Error getting posts: ", error);
+        });
+    }
+
+    // Display posts when the page loads
+    displayPosts();
+
+    // Add post functionality
+    const postButton = document.getElementById("post-button");
+    postButton.addEventListener("click", () => {
+      const title = document.getElementById("post-title").value;
+      const content = document.getElementById("post-content").value;
+
+      // Add post to Firestore
+      db.collection("posts").add({
+        title: title,
+        content: content
+      })
+      .then(() => {
+        console.log("Post added successfully");
+        displayPosts();
+        document.getElementById("post-title").value = "";
+        document.getElementById("post-content").value = "";
+      })
+      .catch(error => {
+        console.error("Error adding post: ", error);
+      });
+    });
+  </script>
+</body>
+</html>
