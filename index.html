@@ -63,15 +63,9 @@
       font-size: 16px;
     }
 
-    /* Video style */
-    .video {
+    /* Newsfeed style */
+    #newsfeed {
       margin-bottom: 20px;
-    }
-
-    .video h3 {
-      color: #333;
-      font-size: 20px;
-      margin-bottom: 10px;
     }
 
     /* Post form style */
@@ -131,6 +125,68 @@
       background-color: rgba(0, 0, 0, 0.3);
     }
 
+    /* Account settings form style */
+    #account-settings-form {
+      background-color: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid #dddfe2;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      width: 300px;
+      margin: 0 auto;
+    }
+
+    #account-settings-form h2 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #account-settings-form input[type="email"],
+    #account-settings-form input[type="password"] {
+      width: calc(100% - 20px);
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      background-color: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(5px);
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    #account-settings-form input[type="email"]:focus,
+    #account-settings-form input[type="password"]:focus {
+      background-color: rgba(255, 255, 255, 0.7);
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #account-settings-form button {
+      background-color: rgba(0, 0, 0, 0.1);
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 100%;
+    }
+
+    #account-settings-form button:hover {
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    #account-settings-form .error-message {
+      color: red;
+      margin-bottom: 10px;
+    }
+
     /* Footer style */
     footer {
       background-color: #f0f2f5;
@@ -147,8 +203,7 @@
   </header>
 
   <main class="container">
-    <div id="videos-container"></div>
-    <div id="posts-container"></div>
+    <div id="newsfeed"></div>
     <div id="post-form">
       <h2>Create Post</h2>
       <input type="text" id="post-title" placeholder="Enter title">
@@ -156,6 +211,16 @@
       <button id="post-button">Post</button>
     </div>
   </main>
+
+  <aside class="container">
+    <div id="account-settings-form">
+      <h2>Account Settings</h2>
+      <div id="settings-error" class="error-message" style="display: none;"></div>
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button id="update-button">Update</button>
+    </div>
+  </aside>
 
   <footer>
     <div class="container">
@@ -169,7 +234,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-auth.js"></script>
   <script>
     // Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCuZ0fE2EltxBV-UA3PCEgOcvM6A1iHTuw",
   authDomain: "myanconnect.firebaseapp.com",
@@ -179,6 +244,7 @@ const firebaseConfig = {
   appId: "1:348861661968:web:ae7b415dedb76555529b95",
   measurementId: "G-6ZS7NGQ54H"
 };
+    };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
@@ -186,43 +252,15 @@ const firebaseConfig = {
     // Reference to Firestore database
     const db = firebase.firestore();
 
-    // Function to display videos
-    function displayVideos() {
-      const videosContainer = document.getElementById("videos-container");
+    // Reference to Firebase authentication
+    const auth = firebase.auth();
 
-      // Clear previous videos
-      videosContainer.innerHTML = "";
+    // Function to display newsfeed
+    function displayNewsfeed() {
+      const newsfeedContainer = document.getElementById("newsfeed");
 
-      // Get videos from Firestore
-      db.collection("videos").get()
-        .then(snapshot => {
-          snapshot.forEach(doc => {
-            const video = doc.data();
-            const videoHtml = `
-              <div class="video">
-                <h3>${video.title}</h3>
-                <video controls>
-                  <source src="${video.url}" type="video/mp4">
-                  Your browser does not support the video tag.
-                </video>
-              </div>`;
-            videosContainer.innerHTML += videoHtml;
-          });
-        })
-        .catch(error => {
-          console.error("Error getting videos: ", error);
-        });
-    }
-
-    // Call displayVideos when the page loads
-    displayVideos();
-
-    // Function to display posts
-    function displayPosts() {
-      const postsContainer = document.getElementById("posts-container");
-
-      // Clear previous posts
-      postsContainer.innerHTML = "";
+      // Clear previous newsfeed
+      newsfeedContainer.innerHTML = "";
 
       // Get posts from Firestore
       db.collection("posts").get()
@@ -234,7 +272,7 @@ const firebaseConfig = {
                 <h3>${post.title}</h3>
                 <p>${post.content}</p>
               </div>`;
-            postsContainer.innerHTML += postHtml;
+            newsfeedContainer.innerHTML += postHtml;
           });
         })
         .catch(error => {
@@ -242,8 +280,8 @@ const firebaseConfig = {
         });
     }
 
-    // Display posts when the page loads
-    displayPosts();
+    // Call displayNewsfeed when the page loads
+    displayNewsfeed();
 
     // Add post functionality
     const postButton = document.getElementById("post-button");
@@ -258,13 +296,42 @@ const firebaseConfig = {
       })
       .then(() => {
         console.log("Post added successfully");
-        displayPosts();
+        displayNewsfeed();
         document.getElementById("post-title").value = "";
         document.getElementById("post-content").value = "";
       })
       .catch(error => {
         console.error("Error adding post: ", error);
       });
+    });
+
+    // Update account settings button click event
+    document.getElementById("update-button").addEventListener("click", function() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      // Update email and password
+      const user = auth.currentUser;
+      user.updateEmail(email)
+        .then(() => {
+          user.updatePassword(password)
+            .then(() => {
+              console.log("User settings updated successfully");
+              document.getElementById("settings-error").style.display = "none";
+            })
+            .catch(error => {
+              // Handle errors
+              document.getElementById("settings-error").innerText = error.message;
+              document.getElementById("settings-error").style.display = "block";
+              console.error("Update password error:", error);
+            });
+        })
+        .catch(error => {
+          // Handle errors
+          document.getElementById("settings-error").innerText = error.message;
+          document.getElementById("settings-error").style.display = "block";
+          console.error("Update email error:", error);
+        });
     });
   </script>
 </body>
